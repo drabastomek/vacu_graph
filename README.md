@@ -37,10 +37,10 @@ Here's some basic steps to use the app; we will use a 12AX7 / ECC83 tube example
     
     <img src="assets/2_b_annotate.png" alt="drawing" width="600"/>
 
-    > [!IMPORTANT]  
-    > if you drew a horizontal line and by accident forgot to change the axis to `Plate voltage` 
-    > the tool will alert you about it and you'll need to click again on the Annotate axes, draw the 
-    > line and fill the information in the dialog window again.
+> [!IMPORTANT]  
+> if you drew a horizontal line and by accident forgot to change the axis to `Plate voltage` 
+> the tool will alert you about it and you'll need to click again on the Annotate axes, draw the 
+> line and fill the information in the dialog window again.
 
 ## Contributing to `vacu_graph`
 
