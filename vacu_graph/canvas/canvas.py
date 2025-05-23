@@ -243,8 +243,12 @@ class CanvasWidget(QWidget):
         s = d/mdev if mdev else np.zeros(len(d))
         return values[np.where(s<m)[0]]
         
-    def __find_the_points(self, coords_input, start_point, end_point, band_width=50):
-        coords = np.where(coords_input == 0)
+    def __find_the_points(self, coords_input, start_point, end_point):
+        # The core method for 'snapping' the drawn line portions
+        # to the underlying curve
+        coords = np.where(coords_input == 0) # get only the 'black' points from the image
+
+        # remove the grid by simply finding outliers in x and y direction
         u_x, c_x = np.unique(coords[0], return_counts=True)
         u_y, c_y = np.unique(coords[1], return_counts=True)
 
@@ -260,15 +264,15 @@ class CanvasWidget(QWidget):
         
         coords = [x_keep, y_keep]
 
+        # impute missing points that will be there from removing the outliers
         slope = (end_point.y() - start_point.y()) / (end_point.x() - start_point.x())
         intercept = end_point.y() - slope * end_point.x()
-        
         idxs = np.array([np.power(slope * e + intercept - coords[1][i],2) for i,e in enumerate(coords[0])]) < 20.
-
         voltage_all = np.arange(np.min(coords[0]), np.max(coords[0]))
         missing = np.array(list(set(voltage_all).difference(coords[0])))
         current_inter = np.interp(missing, coords[0][idxs], coords[1][idxs])
 
+        # take the average of the points that were the closest to the drawn line segment
         data = pd.DataFrame({'voltage': np.concat([coords[0][idxs], missing]), 'current': np.concat([coords[1][idxs], current_inter])}).groupby('voltage').mean().reset_index().values.T#.plot.scatter(x='voltage', y='current')
         return [data[0], data[1]]
     

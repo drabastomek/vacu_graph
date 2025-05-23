@@ -32,11 +32,9 @@ class ImageViewerWidget(QWidget):
         self.img.resize(pixmap.size())
         self.canvas.resize(pixmap.size())
 
+        # get an QImage object so we get access to each pixel
         self.img_underlay = self.img.pixmap().toImage().convertToFormat(QImage.Format_Mono)
         self.canvas.underlayImg = self.img_underlay
-
-    def get_points(self):
-        return self.canvas.points
     
     def annotate_line(self):
         self.canvas.annotate_line()
