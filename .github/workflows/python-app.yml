@@ -1,6 +1,9 @@
 name: Build and Release
 
-on: push
+on: 
+  push:
+    tags:
+      - 'v*'  # Trigger on version tags
 
 jobs:
   build:
