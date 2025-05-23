@@ -31,7 +31,7 @@ jobs:
         pyinstaller --onefile --windowed --name vacu_graph --paths=. vacu_graph/app.py
 
     - name: Rename output for OS
-        shell: bash
+      shell: bash
         run: |
           mkdir -p artifacts
           OS_NAME="${{ matrix.os }}"
