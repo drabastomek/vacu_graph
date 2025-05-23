@@ -32,16 +32,16 @@ jobs:
 
     - name: Rename output for OS
       shell: bash
-        run: |
-          mkdir -p artifacts
-          OS_NAME="${{ matrix.os }}"
-          if [[ "$OS_NAME" == "Windows" ]]; then
-            cp dist/vacu_graph.exe artifacts/vacu_graph-windows.exe
-          elif [[ "$OS_NAME" == "macOS" ]]; then
-            cp dist/vacu_graph artifacts/vacu_graph-macos
-          else
-            cp dist/vacu_graph artifacts/vacu_graph-linux
-          fi
+      run: |
+        mkdir -p artifacts
+        OS_NAME="${{ matrix.os }}"
+        if [[ "$OS_NAME" == "Windows" ]]; then
+          cp dist/vacu_graph.exe artifacts/vacu_graph-windows.exe
+        elif [[ "$OS_NAME" == "macOS" ]]; then
+          cp dist/vacu_graph artifacts/vacu_graph-macos
+        else
+          cp dist/vacu_graph artifacts/vacu_graph-linux
+        fi
 
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
