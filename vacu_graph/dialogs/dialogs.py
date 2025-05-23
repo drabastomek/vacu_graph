@@ -37,6 +37,7 @@ class ExceptionDialog(QDialog):
             self.message = 'An exception occured. Fix the forms before proceeding.'
 
         self.setWindowTitle('Exception occured')
+       
         # Create a label with a message
         label = QLabel(self.message)
         buttonBox = QDialogButtonBox(QDialogButtonBox.Ok)
