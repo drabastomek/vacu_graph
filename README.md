@@ -38,9 +38,45 @@ Here's some basic steps to use the app; we will use a 12AX7 / ECC83 tube example
     <img src="assets/2_b_annotate.png" alt="drawing" width="600"/>
 
 > [!IMPORTANT]  
-> if you drew a horizontal line and by accident forgot to change the axis to `Plate voltage` 
+> If you draw a horizontal line and by accident forget to change the axis to `Plate voltage` 
 > the tool will alert you about it and you'll need to click again on the Annotate axes, draw the 
 > line and fill the information in the dialog window again.
+
+Repeat the steps for the other axis.
+
+3. For each curve repeat the following steps to annotate them.
+
+    1. Draw small sections of the line on the canvas as close as you can to the curve you are
+    annotating.
+
+    <img src="assets/3_a_line.png" alt="drawing" width="600"/>
+
+    2. Once done, click on Annotate line and in the dialog -- add the name for this line.
+
+    <img src="assets/3_b_line.png" alt="drawing" width="600"/>
+
+    3. If all successful, the added curve will appear in blue on the chart.
+
+    <img src="assets/3_c_line.png" alt="drawing" width="600"/>
+
+4. Finally, before you click the Save annotations button, fill in the Tube type and Voltage resolution
+fields. 
+
+> [!IMPORTANT]  
+> Should you forget to do so -- the dialog will inform you that this needs to be done before you can 
+> save the results. 
+
+Upon clicking the Save annotations, the tool will ask you to selec the folder where to store the results
+in; the folder will remain the same for the duration of the session. 
+
+The tool will output two files
+
+<img src="assets/4_b_save.png" alt="drawing" width="600"/>
+
+The `{filename}-agg.csv` will contain the results aggregated at the selected resolution 
+(e.g. every multiple of 10V or 5V for the plate voltage) and the corresponding current for each 
+annotated curve. In contrast, the `{filename}-hi_res.csv` will contain all the results down to the 
+pixel level if so you can aggregate them up at different resolution levels later.
 
 ## Contributing to `vacu_graph`
 
