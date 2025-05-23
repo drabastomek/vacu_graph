@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QWidget, QFileDialog, QLabel
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt
 
-from canvas import CanvasWidget
+from vacu_graph.canvas.canvas import CanvasWidget
 
 class ImageViewerWidget(QWidget):
     def __init__(self, parent=None):

@@ -1,3 +1,6 @@
 dist
+build
 __pycache__
 devel
+*.spec
+.DS_Store

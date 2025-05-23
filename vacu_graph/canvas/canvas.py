@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QPainter, QPen
 from PyQt5.QtCore import Qt, QPoint
 
-from dialogs import AxesAnnotationDialog, ExceptionDialog
+from vacu_graph.dialogs.dialogs import AxesAnnotationDialog, ExceptionDialog
 
 class CanvasWidget(QWidget):
     def __init__(self, parent=None, underlay=None, geometry=None):
@@ -182,7 +182,6 @@ class CanvasWidget(QWidget):
         self.axes_transform[axis] = (slope, offset)
         
         # add some 5 text annotations to confirm
-        # if max(_map_dims) <=10:
         max_map_dim = max(_map_dims)
         self.divider[axis] = int(max_map_dim / np.power(10, int(np.log10(max_map_dim))))
 
@@ -236,23 +235,7 @@ class CanvasWidget(QWidget):
                 if pix == 0:
                     coords[x][y] = 0
 
-        # coords_np = np.array(coords)
-        # np.save('test.npy', coords_np)
-        # print(start_point, end_point)
         return coords
-
-
-    # def __find_black_point(self, coords, start_point, band_width): 
-    #     # TODO: add a penalty for veering too far away from the direction of the drawn line
-    #     start_point_black_vec = coords[start_point.x(), start_point.y()-band_width:start_point.y()+band_width]
-    #     try:
-    #         for i in range(band_width):
-    #             if start_point_black_vec[band_width + i] == 0:
-    #                 return start_point.y()+i
-    #             if start_point_black_vec[band_width - i] == 0:
-    #                 return start_point.y()-i
-    #     except IndexError as e:
-    #         raise e
         
     def __reject_outliers(self, counts, values, m = 5.):
         d = np.abs(counts - np.median(counts))
@@ -288,43 +271,6 @@ class CanvasWidget(QWidget):
 
         data = pd.DataFrame({'voltage': np.concat([coords[0][idxs], missing]), 'current': np.concat([coords[1][idxs], current_inter])}).groupby('voltage').mean().reset_index().values.T#.plot.scatter(x='voltage', y='current')
         return [data[0], data[1]]
-
-    # def __find_the_points(self, coords, start_point, end_point, band_width=50):
-    #     # TODO: this needs a better algorithm
-    #     try:
-    #         # if the start point is white -- find the nearest (up or down) point that is black
-    #         start_point = QPoint(start_point.x(), self.__find_black_point(coords, start_point, band_width))
-    #     except:
-    #         start_point = start_point
-
-    #     # find the line equation so we can follow the points
-    #     slope = (end_point.y() - start_point.y()) / (end_point.x() - start_point.x())
-    #     intercept = end_point.y() - slope * end_point.x()
-
-    #     line = (np.arange(start_point.x(), end_point.x()) * slope + intercept).astype('int')
-        
-    #     # find the 'black' points i.e. follow the line
-    #     x_start = start_point.x()
-    #     x_end = end_point.x()
-        
-    #     line_coords = [np.array([]), np.array([])]
-        
-    #     for i in range(x_start+1, x_end):
-    #         if coords[i, line[i-x_start]] == 0.0:
-    #             # if it's a black point -- just take it
-    #             line_coords[0] = np.append(line_coords[0], i)
-    #             line_coords[1] = np.append(line_coords[1], line[i-x_start])
-    #         else:
-    #             try:
-    #                 # otherwise, find the nearest black point
-    #                 bp = self.__find_black_point(coords, QPoint(i, int(line[i-x_start])), band_width)
-
-    #                 if bp is not None:
-    #                     line_coords[0] = np.append(line_coords[0], i)
-    #                     line_coords[1] = np.append(line_coords[1], bp)        
-    #             except:
-    #                 pass
-    #     return line_coords
     
     def __prepare_full_line(self, points):
         x = np.concat([e[0] for e in points])
