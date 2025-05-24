@@ -35,9 +35,9 @@ jobs:
       run: |
         mkdir -p artifacts
         OS_NAME="${{ matrix.os }}"
-        if [[ "$OS_NAME" == "Windows" ]]; then
+        if [[ "$OS_NAME" == "windows-latest" ]]; then
           cp dist/vacu_graph.exe artifacts/vacu_graph-windows.exe
-        elif [[ "$OS_NAME" == "macOS" ]]; then
+        elif [[ "$OS_NAME" == "macos-latest" ]]; then
           cp dist/vacu_graph artifacts/vacu_graph-macos
         else
           cp dist/vacu_graph artifacts/vacu_graph-linux
