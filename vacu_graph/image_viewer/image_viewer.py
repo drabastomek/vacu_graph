@@ -29,12 +29,20 @@ class ImageViewerWidget(QWidget):
         
         pixmap = QPixmap(image_path)
         self.img.setPixmap(pixmap)
+        print(pixmap.size())
         self.img.resize(pixmap.size())
         self.canvas.resize(pixmap.size())
+
+        self.canvas.setGeometry(self.img.geometry())
 
         # get an QImage object so we get access to each pixel
         self.img_underlay = self.img.pixmap().toImage().convertToFormat(QImage.Format_Mono)
         self.canvas.underlayImg = self.img_underlay
+
+        print('Canvas geometry: ', self.canvas.geometry())
+        print('Image geometry: ', self.img.geometry())
+
+        return pixmap.size()
     
     def annotate_line(self):
         self.canvas.annotate_line()
@@ -47,3 +55,6 @@ class ImageViewerWidget(QWidget):
     
     def get_precision(self):
         return self.canvas.precision
+    
+    def get_axes(self):
+        return self.canvas.axes
