@@ -3,9 +3,8 @@ numpy
 opencv-python
 pandas
 pip
-PyQt5
-PyQt5-Qt5
-PyQt5_sip
+PyQt6
+PyQt6-Qt6
 scikit-learn
 scipy
 pyinstaller

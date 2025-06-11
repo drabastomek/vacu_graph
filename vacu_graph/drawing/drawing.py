@@ -1,9 +1,9 @@
 import sys
 import numpy as np 
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QMainWindow, QPushButton, QVBoxLayout,
     QWidget, QFileDialog, QLabel, QHBoxLayout,
-    QLineEdit, QLineEdit, QApplication, QAction
+    QLineEdit, QLineEdit#, QApplication, QAction
 )
 # from PyQt5.QtGui import QAction
 
