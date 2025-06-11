@@ -3,10 +3,11 @@ import numpy as np
 from PyQt5.QtWidgets import (
     QMainWindow, QPushButton, QVBoxLayout,
     QWidget, QFileDialog, QLabel, QHBoxLayout,
-    QLineEdit, QLineEdit
+    QLineEdit, QLineEdit, QApplication, QAction
 )
-# from PyQt5.QtGui import QPainter, QPen, QPixmap, QImage
-# from PyQt5.QtCore import Qt, QPoint
+# from PyQt5.QtGui import QAction
+
+import matplotlib.pyplot as plt
 
 import pandas as pd
 
@@ -51,6 +52,14 @@ class DrawingApp(QMainWindow):
         tube_type_layout.addWidget(tube_type_conf_label)
         tube_type_layout.addWidget(self.tube_type_input)
 
+        tube_max_diss_label = QLabel(self)
+        tube_max_diss_label.setText('Plate max (W):')
+        self.tube_max_diss = QLineEdit(self)
+
+        tube_max_diss_layout = QHBoxLayout()
+        tube_max_diss_layout.addWidget(tube_max_diss_label)
+        tube_max_diss_layout.addWidget(self.tube_max_diss)
+
         plate_voltage_conf_label = QLabel(self)
         plate_voltage_conf_label.setText('Voltage resolution:')
         self.plate_voltage_resolution = QLineEdit(self)
@@ -61,6 +70,7 @@ class DrawingApp(QMainWindow):
 
         configuration_layout = QHBoxLayout()
         configuration_layout.addLayout(tube_type_layout)
+        configuration_layout.addLayout(tube_max_diss_layout)
         configuration_layout.addLayout(plate_voltage_layout)
 
         # final layout
@@ -74,8 +84,11 @@ class DrawingApp(QMainWindow):
         container.setLayout(layout)
         self.setCentralWidget(container)
 
+        # self.__createMenu()
+
     def load_image(self):
-        self.viewer.load_image()
+        img_size = self.viewer.load_image()
+        self.resize(img_size)
 
     def annotate_axes(self):
         self.viewer.annotate_axes()
@@ -86,8 +99,12 @@ class DrawingApp(QMainWindow):
     def save_annotations(self):
         curves = self.viewer.get_curves()
 
-        if self.tube_type_input.text() == '' or self.plate_voltage_resolution.text() == '':
-            ExceptionDialog(message='Please add the tube type and / or resolution.')
+        if (
+            self.tube_type_input.text() == '' or 
+            self.plate_voltage_resolution.text() == '' or
+            self.tube_max_diss == ''
+        ):
+            ExceptionDialog(message='Tube type, max plate dissipatio, and resolution fileds need to be defined.')
         elif len(curves) == 0:
             ExceptionDialog(message='Annotate the curves first')
         else:
@@ -114,5 +131,42 @@ class DrawingApp(QMainWindow):
             grouped['voltage'] = grouped['group']
             grouped = grouped[['line', 'voltage', 'current']]
 
+            # save data
             full.to_csv(f'{self.output_dir}/{tube_type}-hi_res.csv', index=False)
             grouped.to_csv(f'{self.output_dir}/{tube_type}-agg.csv', index=False)
+
+            # plot the chart and save
+            self.__plot_curves(grouped)
+
+    def __plot_curves(self, df):
+        # prepare max dissipation curve
+        max_plate_dissipation = float(self.tube_max_diss.text())
+
+        df_max_dissipation = df[['voltage']].drop_duplicates().reset_index(drop=True)
+        df_max_dissipation['max_dissipation'] = max_plate_dissipation / df_max_dissipation['voltage'] * 1000
+        df_max_dissipation = df_max_dissipation.loc[df_max_dissipation['voltage'] > 0]
+
+        # get the axes limits
+        axes = self.viewer.get_axes()
+        x_lim, y_lim = axes['Plate voltage'][0], axes['Plate current'][0]
+
+        # generate the plot
+        fig, ax = plt.subplots(figsize=(12,9), squeeze=True) 
+        df.pivot(index='voltage', columns='line', values='current').plot(ax=ax, colormap='copper',xlim=x_lim, ylim=y_lim, title='12AX7', ylabel='current (mA)')
+        df_max_dissipation.plot(x='voltage', y='max_dissipation', ax=ax, c='r')
+
+        # save the plot
+        plt.savefig(f'{self.output_dir}/{self.tube_type_input.text()}.png', dpi=300)
+
+    # def __createMenu(self):
+    #     exitAct = QAction('&Exit', self)
+    #     exitAct.setShortcut('Ctrl+Q')
+    #     exitAct.setStatusTip('Exit application')
+    #     exitAct.triggered.connect(QApplication.instance().quit)
+
+    #     menuBar = self.menuBar()
+    #     fileMenu = menuBar.addMenu("&Files")
+    #     fileMenu.addAction(exitAct)
+    #     menuBar.setNativeMenuBar(True)
+
+    #     print('dupa')

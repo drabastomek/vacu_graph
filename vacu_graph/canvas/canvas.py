@@ -3,16 +3,17 @@ import numpy as np
 from PyQt5.QtWidgets import (
         QWidget, QInputDialog
 )
-from PyQt5.QtGui import QPainter, QPen
+from PyQt5.QtGui import QPainter, QPen, QImage
 from PyQt5.QtCore import Qt, QPoint
 
 from vacu_graph.dialogs.dialogs import AxesAnnotationDialog, ExceptionDialog
+import pandas as pd
 
 class CanvasWidget(QWidget):
     def __init__(self, parent=None, underlay=None, geometry=None):
         super().__init__(parent)
         self.parent = parent
-        self.underlayImg = underlay
+        self.underlayImg: QImage = underlay
 
         self.setAttribute(Qt.WA_TransparentForMouseEvents, False)
         self.setAttribute(Qt.WA_TranslucentBackground)
@@ -45,6 +46,7 @@ class CanvasWidget(QWidget):
             self.drawing = True
             self.last_point = event.pos()
             self.current_point = event.pos()
+            print(event.pos())
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -220,6 +222,9 @@ class CanvasWidget(QWidget):
         s_x, s_y = start_point.x(), start_point.y()
         e_x, e_y = end_point.x(), end_point.y()
 
+        print('points: ', s_x, s_y, e_x, e_y)
+        print(self.geometry())
+
         coords = np.ones([self.underlayImg.width(), self.underlayImg.height()]) * 16777216
 
         # flip if end point coords are smaller than the start ones
@@ -264,17 +269,29 @@ class CanvasWidget(QWidget):
         
         coords = [x_keep, y_keep]
 
-        # impute missing points that will be there from removing the outliers
-        slope = (end_point.y() - start_point.y()) / (end_point.x() - start_point.x())
-        intercept = end_point.y() - slope * end_point.x()
-        idxs = np.array([np.power(slope * e + intercept - coords[1][i],2) for i,e in enumerate(coords[0])]) < 20.
-        voltage_all = np.arange(np.min(coords[0]), np.max(coords[0]))
-        missing = np.array(list(set(voltage_all).difference(coords[0])))
-        current_inter = np.interp(missing, coords[0][idxs], coords[1][idxs])
+        try:
+            # impute missing points that will be there from removing the outliers
+            slope = (end_point.y() - start_point.y()) / (end_point.x() - start_point.x())
+            intercept = end_point.y() - slope * end_point.x()
 
-        # take the average of the points that were the closest to the drawn line segment
-        data = pd.DataFrame({'voltage': np.concat([coords[0][idxs], missing]), 'current': np.concat([coords[1][idxs], current_inter])}).groupby('voltage').mean().reset_index().values.T#.plot.scatter(x='voltage', y='current')
-        return [data[0], data[1]]
+            squared_distance = np.array([np.power(slope * e + intercept - coords[1][i],2) for i,e in enumerate(coords[0])])
+            idxs = squared_distance < 20.
+            voltage_all = np.arange(np.min(coords[0]), np.max(coords[0]))
+            missing = np.array(list(set(voltage_all).difference(coords[0])))
+            current_inter = np.interp(missing, coords[0][idxs], coords[1][idxs])
+
+            # take the average of the points that were the closest to the drawn line segment
+            data = pd.DataFrame({'voltage': np.concat([coords[0][idxs], missing]), 'current': np.concat([coords[1][idxs], current_inter])}).groupby('voltage').mean().reset_index().values.T#.plot.scatter(x='voltage', y='current')
+            return [data[0], data[1]]
+        except:
+            print('\n-------\n')
+            # print(start_point, end_point)
+            # print(slope, intercept)
+            # print(missing, coords[0][idxs], coords[1][idxs], coords, idxs, squared_distance)
+            print('\n-------\n')
+
+            return coords
+
     
     def __prepare_full_line(self, points):
         x = np.concat([e[0] for e in points])
