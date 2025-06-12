@@ -138,11 +138,19 @@ class DrawingApp(QMainWindow):
             # plot the chart and save
             self.__plot_curves(grouped)
 
-    def __plot_curves(self, df):
+    def __plot_curves(self, df_input):
+        def find_nearest_point(df, target_value):
+            df.reset_index(inplace=True, drop=True)
+            abs_difference = abs(df['voltage'] - target_value)
+            closest_index = abs_difference.idxmin()
+            closest_row = df.iloc[closest_index]
+
+            return closest_row['current']
+        
         # prepare max dissipation curve
         max_plate_dissipation = float(self.tube_max_diss.text())
 
-        df_max_dissipation = df[['voltage']].drop_duplicates().reset_index(drop=True)
+        df_max_dissipation = df_input[['voltage']].drop_duplicates().reset_index(drop=True)
         df_max_dissipation['max_dissipation'] = max_plate_dissipation / df_max_dissipation['voltage'] * 1000
         df_max_dissipation = df_max_dissipation.loc[df_max_dissipation['voltage'] > 0]
         df_max_dissipation = df_max_dissipation.sort_values(by='voltage')
@@ -152,9 +160,8 @@ class DrawingApp(QMainWindow):
         x_lim, y_lim = axes['Plate voltage'][0], axes['Plate current'][0]
 
         # generate the plot
-        fig, ax = plt.subplots(figsize=(12,9), squeeze=True) 
-        # df.pivot(index='voltage', columns='line', values='current').plot(ax=ax, colormap='copper',xlim=x_lim, ylim=y_lim, title='12AX7', ylabel='current (mA)')
-        for label, df in df.groupby('line'):
+        _, ax = plt.subplots(figsize=(12,9), squeeze=True) 
+        for label, df in df_input.groupby('line'):
             df.plot(
                 x='voltage', 
                 y='current', 
@@ -164,9 +171,19 @@ class DrawingApp(QMainWindow):
                 ylim=y_lim, 
                 title=self.tube_type_input.text(), 
                 ylabel='current (mA)', 
-                colormap='copper'
+                c='black'
             )
+            label_x_position = df.max()['voltage']
+            label_y_position = find_nearest_point(df, label_x_position)
+            ax.annotate(xy=(0, 0), xytext=(label_x_position, label_y_position), text=label)
+
         df_max_dissipation.plot(x='voltage', y='max_dissipation', ax=ax, c='r')
+
+        # add grid lines
+        plt.grid(True, which='major', linestyle='-', color='black', alpha=0.5)
+        plt.grid(True, which='minor', linestyle=':', color='gray', alpha=0.3)
+        plt.minorticks_on()
+        plt.tight_layout()
 
         # save the plot
         plt.savefig(f'{self.output_dir}/{self.tube_type_input.text()}.png', dpi=300)
