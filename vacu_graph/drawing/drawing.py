@@ -87,8 +87,8 @@ class DrawingApp(QMainWindow):
         # self.__createMenu()
 
     def load_image(self):
-        img_size = self.viewer.load_image()
-        self.resize(img_size)
+        self.img_size = self.viewer.load_image()
+        self.resize(self.img_size)
 
     def annotate_axes(self):
         self.viewer.annotate_axes()
@@ -145,6 +145,7 @@ class DrawingApp(QMainWindow):
         df_max_dissipation = df[['voltage']].drop_duplicates().reset_index(drop=True)
         df_max_dissipation['max_dissipation'] = max_plate_dissipation / df_max_dissipation['voltage'] * 1000
         df_max_dissipation = df_max_dissipation.loc[df_max_dissipation['voltage'] > 0]
+        df_max_dissipation = df_max_dissipation.sort_values(by='voltage')
 
         # get the axes limits
         axes = self.viewer.get_axes()
@@ -152,7 +153,19 @@ class DrawingApp(QMainWindow):
 
         # generate the plot
         fig, ax = plt.subplots(figsize=(12,9), squeeze=True) 
-        df.pivot(index='voltage', columns='line', values='current').plot(ax=ax, colormap='copper',xlim=x_lim, ylim=y_lim, title='12AX7', ylabel='current (mA)')
+        # df.pivot(index='voltage', columns='line', values='current').plot(ax=ax, colormap='copper',xlim=x_lim, ylim=y_lim, title='12AX7', ylabel='current (mA)')
+        for label, df in df.groupby('line'):
+            df.plot(
+                x='voltage', 
+                y='current', 
+                ax=ax, 
+                label=label, 
+                xlim=x_lim, 
+                ylim=y_lim, 
+                title=self.tube_type_input.text(), 
+                ylabel='current (mA)', 
+                colormap='copper'
+            )
         df_max_dissipation.plot(x='voltage', y='max_dissipation', ax=ax, c='r')
 
         # save the plot
