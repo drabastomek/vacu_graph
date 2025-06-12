@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QVBoxLayout, QWidget, QFileDialog, QLabel
 from PyQt6.QtGui import QPixmap, QImage
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QSize
 
 from vacu_graph.canvas.canvas import CanvasWidget
 
@@ -20,30 +20,29 @@ class ImageViewerWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.img)
 
-    def resizeEvent(self, event):
-        self.canvas.resize(self.img.size())
-        super().resizeEvent(event)
-
     def load_image(self, image_path=None):
         image_path, _ = QFileDialog.getOpenFileName(self, "Open Image", "", "Images (*.png *.jpg *.jpeg)")
         if not image_path or image_path is None:
             return
         
         pixmap = QPixmap(image_path)
+        pixmap = pixmap.scaledToWidth(1600, mode = Qt.TransformationMode.SmoothTransformation)
+        # defaultSize = QSize(1024, 768)
         self.img.setPixmap(pixmap)
-        print(pixmap.size())
         self.img.resize(pixmap.size())
+        # self.img.resize(pixmap.size())
+        # self.canvas.resize(pixmap.size())
         self.canvas.resize(pixmap.size())
-
         self.canvas.setGeometry(self.img.geometry())
 
         # get an QImage object so we get access to each pixel
         self.img_underlay = self.img.pixmap().toImage().convertToFormat(QImage.Format.Format_Mono)
         self.canvas.underlayImg = self.img_underlay
 
-        print('Canvas geometry: ', self.canvas.geometry())
-        print('Image geometry: ', self.img.geometry())
+        # print('Canvas geometry: ', self.canvas.geometry())
+        # print('Image geometry: ', self.img.geometry())
 
+        # return pixmap.size()
         return pixmap.size()
     
     def annotate_line(self):
