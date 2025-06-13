@@ -15,8 +15,8 @@ class CanvasWidget(QWidget):
         self.parent = parent
         self.underlayImg: QImage = underlay
 
-        self.setAttribute(Qt.WA_TransparentForMouseEvents, False)
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, False)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setMouseTracking(True)
 
         if geometry is None:
@@ -42,14 +42,13 @@ class CanvasWidget(QWidget):
         self.precision = 3         # precision for rounding final results
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self.drawing = True
             self.last_point = event.pos()
             self.current_point = event.pos()
-            print(event.pos())
 
     def mouseReleaseEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self.drawing = False
             shape = (self.last_point, self.current_point)
             self.shapes.append(shape)
@@ -105,15 +104,15 @@ class CanvasWidget(QWidget):
         # define pens
         Rpen = QPen()
         Rpen.setWidth(2)
-        Rpen.setColor(Qt.red)
+        Rpen.setColor(QColorConstants.Red)
 
         Bpen = QPen()
         Bpen.setWidth(2)
-        Bpen.setColor(Qt.blue)
+        Bpen.setColor(QColorConstants.Blue)
 
         Gpen = QPen()
         Gpen.setWidth(2)
-        Gpen.setColor(Qt.green)
+        Gpen.setColor(QColorConstants.Green)
         
         # draw guide lines
         painter.setPen(Rpen)
@@ -222,9 +221,6 @@ class CanvasWidget(QWidget):
         s_x, s_y = start_point.x(), start_point.y()
         e_x, e_y = end_point.x(), end_point.y()
 
-        print('points: ', s_x, s_y, e_x, e_y)
-        print(self.geometry())
-
         coords = np.ones([self.underlayImg.width(), self.underlayImg.height()]) * 16777216
 
         # flip if end point coords are smaller than the start ones
@@ -284,11 +280,7 @@ class CanvasWidget(QWidget):
             data = pd.DataFrame({'voltage': np.concat([coords[0][idxs], missing]), 'current': np.concat([coords[1][idxs], current_inter])}).groupby('voltage').mean().reset_index().values.T#.plot.scatter(x='voltage', y='current')
             return [data[0], data[1]]
         except:
-            print('\n-------\n')
-            # print(start_point, end_point)
-            # print(slope, intercept)
-            # print(missing, coords[0][idxs], coords[1][idxs], coords, idxs, squared_distance)
-            print('\n-------\n')
+            pass
 
             return coords
 

@@ -13,7 +13,7 @@ class AxesAnnotationDialog(QDialog):
         self.min_point = QLineEdit(self)
         self.max_point = QLineEdit(self)
 
-        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
+        buttonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel, self)
 
         layout = QFormLayout(self)
         layout.addRow("Select the axis to annotate", self.axes_name)
@@ -40,7 +40,7 @@ class ExceptionDialog(QDialog):
        
         # Create a label with a message
         label = QLabel(self.message)
-        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok)
+        buttonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
         buttonBox.accepted.connect(self.accept)
 
         # Create a layout for the dialog
@@ -52,5 +52,5 @@ class ExceptionDialog(QDialog):
         self.setLayout(dialog_layout)
 
         # Show the dialog as a modal dialog (blocks the main window)
-        self.exec_()
+        self.exec()
     

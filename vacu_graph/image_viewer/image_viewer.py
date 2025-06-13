@@ -8,7 +8,8 @@ class ImageViewerWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.img = QLabel(self)
-        self.img.setAlignment(Qt.AlignCenter)
+        self.img.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
 
         self.img_underlay = QImage()
 
@@ -17,10 +18,6 @@ class ImageViewerWidget(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.img)
-
-    def resizeEvent(self, event):
-        self.canvas.resize(self.img.size())
-        super().resizeEvent(event)
 
     def load_image(self, image_path=None):
         image_path, _ = QFileDialog.getOpenFileName(self, "Open Image", "", "Images (*.png *.jpg *.jpeg)")
@@ -35,7 +32,7 @@ class ImageViewerWidget(QWidget):
         self.canvas.setGeometry(self.img.geometry())
 
         # get an QImage object so we get access to each pixel
-        self.img_underlay = self.img.pixmap().toImage().convertToFormat(QImage.Format_Mono)
+        self.img_underlay = self.img.pixmap().toImage().convertToFormat(QImage.Format.Format_Mono)
         self.canvas.underlayImg = self.img_underlay
 
         return pixmap.size()

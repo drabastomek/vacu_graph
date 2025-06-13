@@ -1,5 +1,6 @@
 import sys
 import numpy as np 
+
 from PySide6.QtWidgets import (
     QMainWindow, QPushButton, QVBoxLayout,
     QWidget, QFileDialog, QLabel, QHBoxLayout,
@@ -90,8 +91,8 @@ class DrawingApp(QMainWindow):
 
 
     def load_image(self):
-        img_size = self.viewer.load_image()
-        self.resize(img_size)
+        self.img_size = self.viewer.load_image()
+        self.resize(self.img_size)
 
     def annotate_axes(self):
         self.viewer.annotate_axes()
@@ -160,18 +161,40 @@ class DrawingApp(QMainWindow):
         # prepare max dissipation curve
         max_plate_dissipation = float(self.tube_max_diss.text())
 
-        df_max_dissipation = df[['voltage']].drop_duplicates().reset_index(drop=True)
+        df_max_dissipation = df_input[['voltage']].drop_duplicates().reset_index(drop=True)
         df_max_dissipation['max_dissipation'] = max_plate_dissipation / df_max_dissipation['voltage'] * 1000
         df_max_dissipation = df_max_dissipation.loc[df_max_dissipation['voltage'] > 0]
+        df_max_dissipation = df_max_dissipation.sort_values(by='voltage')
 
         # get the axes limits
         axes = self.viewer.get_axes()
         x_lim, y_lim = axes['Plate voltage'][0], axes['Plate current'][0]
 
         # generate the plot
-        fig, ax = plt.subplots(figsize=(12,9), squeeze=True) 
-        df.pivot(index='voltage', columns='line', values='current').plot(ax=ax, colormap='copper',xlim=x_lim, ylim=y_lim, title='12AX7', ylabel='current (mA)')
+        _, ax = plt.subplots(figsize=(12,9), squeeze=True) 
+        for label, df in df_input.groupby('line'):
+            df.plot(
+                x='voltage', 
+                y='current', 
+                ax=ax, 
+                label=label, 
+                xlim=x_lim, 
+                ylim=y_lim, 
+                title=self.tube_type_input.text(), 
+                ylabel='current (mA)', 
+                c='black'
+            )
+            label_x_position = df.max()['voltage']
+            label_y_position = find_nearest_point(df, label_x_position)
+            ax.annotate(xy=(0, 0), xytext=(label_x_position, label_y_position), text=label)
+
         df_max_dissipation.plot(x='voltage', y='max_dissipation', ax=ax, c='r')
+
+        # add grid lines
+        plt.grid(True, which='major', linestyle='-', color='black', alpha=0.5)
+        plt.grid(True, which='minor', linestyle=':', color='gray', alpha=0.3)
+        plt.minorticks_on()
+        plt.tight_layout()
 
         # save the plot
         plt.savefig(f'{self.output_dir}/{self.tube_type_input.text()}.png', dpi=300)
