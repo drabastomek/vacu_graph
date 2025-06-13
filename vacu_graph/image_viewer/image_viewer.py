@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QVBoxLayout, QWidget, QFileDialog, QLabel
-from PyQt5.QtGui import QPixmap, QImage
-from PyQt5.QtCore import Qt
+from PySide6.QtWidgets import QVBoxLayout, QWidget, QFileDialog, QLabel
+from PySide6.QtGui import QPixmap, QImage
+from PySide6.QtCore import Qt
 
 from vacu_graph.canvas.canvas import CanvasWidget
 
@@ -28,19 +28,15 @@ class ImageViewerWidget(QWidget):
             return
         
         pixmap = QPixmap(image_path)
+        pixmap = pixmap.scaledToWidth(1440, mode = Qt.TransformationMode.SmoothTransformation)
         self.img.setPixmap(pixmap)
-        print(pixmap.size())
         self.img.resize(pixmap.size())
         self.canvas.resize(pixmap.size())
-
         self.canvas.setGeometry(self.img.geometry())
 
         # get an QImage object so we get access to each pixel
         self.img_underlay = self.img.pixmap().toImage().convertToFormat(QImage.Format_Mono)
         self.canvas.underlayImg = self.img_underlay
-
-        print('Canvas geometry: ', self.canvas.geometry())
-        print('Image geometry: ', self.img.geometry())
 
         return pixmap.size()
     

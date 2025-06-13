@@ -1,11 +1,9 @@
 matplotlib
 numpy
-opencv-python
+py-opencv
 pandas
 pip
-PyQt5
-PyQt5-Qt5
-PyQt5_sip
+PySide6
 scikit-learn
 scipy
 pyinstaller

@@ -1,47 +1,51 @@
 import sys
 import numpy as np 
-from PyQt5.QtWidgets import (
+from PySide6.QtWidgets import (
     QMainWindow, QPushButton, QVBoxLayout,
     QWidget, QFileDialog, QLabel, QHBoxLayout,
-    QLineEdit, QLineEdit, QApplication, QAction
+    QLineEdit, QLineEdit, QApplication
 )
-# from PyQt5.QtGui import QAction
+from PySide6.QtGui import QAction, QKeySequence, QIcon, QPixmap
+from PySide6.QtCore import Qt
 
 import matplotlib.pyplot as plt
-
 import pandas as pd
 
 from vacu_graph.image_viewer.image_viewer import ImageViewerWidget
 from vacu_graph.dialogs.dialogs import ExceptionDialog
+import vacu_graph.drawing.rc_icons
 
 class DrawingApp(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Plate curves extractor")
         self.viewer = ImageViewerWidget(self)
         self.output_dir = '.' # current directory
         self.output_dir_allocated = False
 
         self.init_ui()
+        self.__createActions()
+        self.__createToolBar()
+        self.__createMenu()
+        self.setWindowTitle("Plate curves extractor")
 
     def init_ui(self):
-        # controls
-        load_btn = QPushButton("Load Image")
-        add_axes = QPushButton("Annotate axes")
-        add_line = QPushButton("Annotate line")
-        save_btn = QPushButton("Save Annotations")
+        # # controls
+        # load_btn = QPushButton("Load Image")
+        # add_axes = QPushButton("Annotate axes")
+        # add_line = QPushButton("Annotate line")
+        # save_btn = QPushButton("Save Annotations")
 
-        load_btn.clicked.connect(self.load_image)
-        add_axes.clicked.connect(self.annotate_axes)
-        add_line.clicked.connect(self.annotate_line)
-        save_btn.clicked.connect(self.save_annotations)
+        # load_btn.clicked.connect(self.load_image)
+        # add_axes.clicked.connect(self.annotate_axes)
+        # add_line.clicked.connect(self.annotate_line)
+        # save_btn.clicked.connect(self.save_annotations)
 
-        controls = QHBoxLayout()
-        controls.addWidget(load_btn)
-        controls.addWidget(add_axes)
-        controls.addWidget(add_line)
-        controls.addWidget(save_btn)
+        # controls = QHBoxLayout()
+        # controls.addWidget(load_btn)
+        # controls.addWidget(add_axes)
+        # controls.addWidget(add_line)
+        # controls.addWidget(save_btn)
 
         # configuration
         tube_type_conf_label = QLabel(self)
@@ -75,7 +79,7 @@ class DrawingApp(QMainWindow):
 
         # final layout
         layout = QVBoxLayout()
-        layout.addLayout(controls)
+        # layout.addLayout(controls)
         layout.addLayout(configuration_layout)
         layout.addWidget(self.viewer)
 
@@ -84,7 +88,6 @@ class DrawingApp(QMainWindow):
         container.setLayout(layout)
         self.setCentralWidget(container)
 
-        # self.__createMenu()
 
     def load_image(self):
         img_size = self.viewer.load_image()
@@ -138,7 +141,22 @@ class DrawingApp(QMainWindow):
             # plot the chart and save
             self.__plot_curves(grouped)
 
-    def __plot_curves(self, df):
+    def about(self):
+        QMessageBox.about(self, "About Dock Widgets",
+                          "The <b>Dock Widgets</b> example demonstrates how to use "
+                          "Qt's dock widgets. You can enter your own text, click a "
+                          "customer to add a customer name and address, and click "
+                          "standard paragraphs to add them.")
+
+    def __plot_curves(self, df_input):
+        def find_nearest_point(df, target_value):
+            df.reset_index(inplace=True, drop=True)
+            abs_difference = abs(df['voltage'] - target_value)
+            closest_index = abs_difference.idxmin()
+            closest_row = df.iloc[closest_index]
+
+            return closest_row['current']
+        
         # prepare max dissipation curve
         max_plate_dissipation = float(self.tube_max_diss.text())
 
@@ -158,15 +176,61 @@ class DrawingApp(QMainWindow):
         # save the plot
         plt.savefig(f'{self.output_dir}/{self.tube_type_input.text()}.png', dpi=300)
 
-    # def __createMenu(self):
-    #     exitAct = QAction('&Exit', self)
-    #     exitAct.setShortcut('Ctrl+Q')
-    #     exitAct.setStatusTip('Exit application')
-    #     exitAct.triggered.connect(QApplication.instance().quit)
+    def __undo(self):
+        pass
 
-    #     menuBar = self.menuBar()
-    #     fileMenu = menuBar.addMenu("&Files")
-    #     fileMenu.addAction(exitAct)
-    #     menuBar.setNativeMenuBar(True)
+    def __createActions(self):
+        load_icon = QIcon(QPixmap(':/icons/add.png'))
+        self.__load_image_act = QAction(load_icon, "&Load image",
+                                       self, shortcut=QKeySequence.StandardKey.New,
+                                       statusTip="Load new chart",
+                                       triggered=self.load_image)
+        
+        save_icon = QIcon(QPixmap(':/icons/save.png'))
+        self._save_act = QAction(save_icon, "&Save as...", self,
+                                 shortcut=QKeySequence.StandardKey.Save,
+                                 statusTip="Save the annotations", triggered=self.save_annotations)
 
-    #     print('dupa')
+        undo_icon = QIcon(QPixmap(':/icons/undo.png'))
+        self._undo_act = QAction(undo_icon, "&Undo", self,
+                                 shortcut=QKeySequence.StandardKey.Undo,
+                                 statusTip="Undo the last action", triggered=self.__undo)
+        
+        self._quit_act = QAction("&Quit", self, shortcut="Ctrl+Q",
+                                 statusTip="Quit the application", triggered=self.close)
+        
+        axes_icon = QIcon(QPixmap(':/icons/axes.png'))
+        self._axes_act = QAction(axes_icon, "&Annotate axes", self, 
+                                 shortcut=QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_A),
+                                 statusTip="Annotate axes", triggered=self.annotate_axes)
+        
+        lines_icon = QIcon(QPixmap(':/icons/lines.png'))
+        self._line_act = QAction(lines_icon, "Annotate &line", self, 
+                                 shortcut=QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_L),
+                                 statusTip="Annotate line", triggered=self.annotate_line)
+        
+    def __createMenu(self):
+        self._file_menu = self.menuBar().addMenu("&File")
+        self._file_menu.addAction(self.__load_image_act)
+        self._file_menu.addAction(self._save_act)
+        self._file_menu.addSeparator()
+        self._file_menu.addAction(self._quit_act)
+
+        self._edit_menu = self.menuBar().addMenu("&Edit")
+        self._edit_menu.addAction(self._undo_act)
+
+        self._actions_menu = self.menuBar().addMenu("&Actions")
+        self._actions_menu.addAction(self._axes_act)
+        self._actions_menu.addAction(self._line_act)
+
+    def __createToolBar(self):
+        self._file_tool_bar = self.addToolBar("File")
+        self._file_tool_bar.addAction(self.__load_image_act)
+        self._file_tool_bar.addAction(self._save_act)
+
+        self._edit_tool_bar = self.addToolBar("Edit")
+        self._edit_tool_bar.addAction(self._undo_act)
+
+        self._actions_tool_bar = self.addToolBar("Actions")
+        self._actions_tool_bar.addAction(self._axes_act)
+        self._actions_tool_bar.addAction(self._line_act)

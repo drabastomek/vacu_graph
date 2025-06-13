@@ -1,10 +1,10 @@
 import sys
 import numpy as np 
-from PyQt5.QtWidgets import (
+from PySide6.QtWidgets import (
         QWidget, QInputDialog
 )
-from PyQt5.QtGui import QPainter, QPen, QImage
-from PyQt5.QtCore import Qt, QPoint
+from PySide6.QtGui import QPainter, QPen, QImage, QColorConstants
+from PySide6.QtCore import Qt, QPoint
 
 from vacu_graph.dialogs.dialogs import AxesAnnotationDialog, ExceptionDialog
 import pandas as pd

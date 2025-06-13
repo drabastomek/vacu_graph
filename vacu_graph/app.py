@@ -10,7 +10,7 @@ _project_root = os.path.dirname(_vac_dir)
 if _project_root not in sys.path:
     sys.path.insert(0, _project_root)
 
-from PyQt5.QtWidgets import (
+from PySide6.QtWidgets import (
     QApplication
 )
 
@@ -20,7 +20,7 @@ def main():
     app = QApplication(sys.argv)
     window = DrawingApp()
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 if __name__ == "__main__":
     main()
