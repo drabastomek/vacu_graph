@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QVBoxLayout, QWidget, QFileDialog, QLabel
-from PyQt6.QtGui import QPixmap, QImage
-from PyQt6.QtCore import Qt, QSize
+from PySide6.QtWidgets import QVBoxLayout, QWidget, QFileDialog, QLabel
+from PySide6.QtGui import QPixmap, QImage
+from PySide6.QtCore import Qt
 
 from vacu_graph.canvas.canvas import CanvasWidget
 
@@ -8,7 +8,6 @@ class ImageViewerWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.img = QLabel(self)
-        # self.img.setAlignment(Qt.AlignCenter)
         self.img.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
 
@@ -26,12 +25,9 @@ class ImageViewerWidget(QWidget):
             return
         
         pixmap = QPixmap(image_path)
-        pixmap = pixmap.scaledToWidth(1600, mode = Qt.TransformationMode.SmoothTransformation)
-        # defaultSize = QSize(1024, 768)
+        pixmap = pixmap.scaledToWidth(1440, mode = Qt.TransformationMode.SmoothTransformation)
         self.img.setPixmap(pixmap)
         self.img.resize(pixmap.size())
-        # self.img.resize(pixmap.size())
-        # self.canvas.resize(pixmap.size())
         self.canvas.resize(pixmap.size())
         self.canvas.setGeometry(self.img.geometry())
 
@@ -39,10 +35,6 @@ class ImageViewerWidget(QWidget):
         self.img_underlay = self.img.pixmap().toImage().convertToFormat(QImage.Format.Format_Mono)
         self.canvas.underlayImg = self.img_underlay
 
-        # print('Canvas geometry: ', self.canvas.geometry())
-        # print('Image geometry: ', self.img.geometry())
-
-        # return pixmap.size()
         return pixmap.size()
     
     def annotate_line(self):
